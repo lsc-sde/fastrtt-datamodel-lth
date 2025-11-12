@@ -40,5 +40,5 @@ JOIN @db_documentviewer.dbo.primarydepartment AS pd
   AND pd.name = sm.documentviewer_specialty COLLATE Latin1_General_CI_AS
 LEFT JOIN @db_documentviewer.dbo.documenttype AS dt
   ON dt.documenttypeid = cd.documenttypeid
-WHERE
-  sm.documentviewer_specialty = 'Cardiology'
+-- WHERE
+--   sm.documentviewer_specialty = 'Cardiology'
