@@ -92,4 +92,17 @@ variables = {
     "db_documentviewer": os.getenv("DB_DOCUMENTVIEWER"),
 }
 
-config = Config(**dict(SQLMeshSettings(project="fastrtt-lth", variables=variables)))
+# Statements to execute before and after running SQLMesh
+before_all = [
+    "@before_all()",
+]
+
+after_all = [
+    "@after_all()",
+]
+
+config = Config(
+    **dict(SQLMeshSettings(project="fastrtt-lth", variables=variables)),
+    before_all=before_all,
+    after_all=after_all,
+)

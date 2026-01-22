@@ -1,6 +1,8 @@
 MODEL (
-  name fastrtt.stg__note,
-  kind FULL,
+  name fastrtt.rxn__document,
+  kind INCREMENTAL_BY_UNIQUE_KEY (
+    unique_key (org_code, source_system, source_id)
+  ),
   cron '@daily',
   grain note_id
 );
@@ -10,21 +12,23 @@ WITH pathways AS (
     spl.mrn AS mrn,
     spl.specialty AS specialty,
     min(spl.rtt_start_date) AS rtt_start_date
-  FROM fastrtt.src__patient_list AS spl
+  FROM fastrtt.rxn__incomplete_ptl AS spl
   WHERE
-    spl.wait_in_days > 18 * 7
+    spl.wait_in_days > 18 * 7 AND spl.valid_to IS NULL
   GROUP BY
     spl.mrn,
     spl.specialty
 )
 SELECT
-  cd.pdfdocumentkey AS note_id,
+  'rxn' AS org_code,
+  'document_viewer' AS source_system,
+  cd.pdfdocumentkey::VARCHAR AS source_id,
   cd.patientmrn AS person_id,
   cd.eventdate AS note_date,
   32817 AS note_type_concept_id, /* Athena concept_id for 'EHR' */
-  cd.filestream AS note_text,
   pd.name AS primary_department,
   ad.name AS alias_department,
+  cd.filestream AS note_content,
   cd.agent AS provider_id,
   coalesce(dt.displaynameoverride, dt.displayname) AS note_source_value
 FROM pathways AS p
@@ -40,5 +44,13 @@ JOIN @db_documentviewer.dbo.primarydepartment AS pd
   AND pd.name = sm.documentviewer_specialty COLLATE Latin1_General_CI_AS
 LEFT JOIN @db_documentviewer.dbo.documenttype AS dt
   ON dt.documenttypeid = cd.documenttypeid
--- WHERE
---   sm.documentviewer_specialty = 'Cardiology'
+WHERE
+  NOT EXISTS(
+    SELECT
+      1
+    FROM fastrtt.existing_note AS e
+    WHERE
+      e.source_id = cd.pdfdocumentkey
+      AND org_code = 'rxn'
+      AND source_system = 'document_viewer'
+  )
