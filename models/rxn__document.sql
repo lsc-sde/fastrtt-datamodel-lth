@@ -14,7 +14,8 @@ WITH pathways AS (
     min(spl.rtt_start_date) AS rtt_start_date
   FROM fastrtt.rxn__incomplete_ptl AS spl
   WHERE
-    spl.wait_in_days > 18 * 7 AND spl.valid_to IS NULL
+    datediff(DAY, spl.rtt_start_date::DATETIME2, getdate()::DATETIME2) > 18 * 7
+    AND spl.valid_to IS NULL
   GROUP BY
     spl.mrn,
     spl.specialty

@@ -6,7 +6,7 @@ MODEL (
 );
 
 SELECT DISTINCT
-  org_code::VARCHAR,
-  source_system::VARCHAR,
-  source_id::VARCHAR
+  org_code::VARCHAR(3),
+  source_system::VARCHAR(20),
+  source_id::VARCHAR(100)
 FROM fastrtt.rxn__document
