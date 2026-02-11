@@ -1,10 +1,6 @@
 MODEL (
   name fastrtt.rxn__incomplete_ptl,
-  kind SCD_TYPE_2_BY_COLUMN (
-    unique_key pathway_id,
-    columns [rtt_last_status],
-    invalidate_hard_deletes (1 = 1)
-  ),
+  kind FULL,
   cron '@daily',
   grain pathway_id
 );

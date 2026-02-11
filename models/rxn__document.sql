@@ -13,9 +13,8 @@ WITH pathways AS (
     spl.specialty AS specialty,
     min(spl.rtt_start_date) AS rtt_start_date
   FROM fastrtt.rxn__incomplete_ptl AS spl
-  WHERE
-    datediff(DAY, spl.rtt_start_date::DATETIME2, getdate()::DATETIME2) > 18 * 7
-    AND spl.valid_to IS NULL
+  -- WHERE
+  --   datediff(DAY, spl.rtt_start_date::DATETIME2, getdate()::DATETIME2) > 18 * 7
   GROUP BY
     spl.mrn,
     spl.specialty
