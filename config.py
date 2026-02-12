@@ -35,11 +35,15 @@ gateway_mssql = GatewayConfig(
     connection=MSSQLConnectionConfig(
         host=os.environ["MSSQL_HOST"],
         database=os.environ["MSSQL_DATABASE"],
+        user=os.environ["MSSQL_USER"],
+        password=os.environ["MSSQL_PASSWORD"],
         concurrent_tasks=os.getenv("MSSQL_CONCURRENT_TASKS", default=4),
     ),
     state_connection=MSSQLConnectionConfig(
         host=os.environ["MSSQL_STATE_HOST"],
         database=os.environ["MSSQL_STATE_DATABASE"],
+        user=os.environ["MSSQL_USER"],
+        password=os.environ["MSSQL_PASSWORD"],
     ),
     state_schema=os.environ["STATE_SCHEMA"],
 )
