@@ -1,0 +1,44 @@
+# Synthetic data only: MRNs TEST000x, pathways PW00000x.
+test_rxn__incomplete_ptl_person_link:
+  model: pathways.rxn__incomplete_ptl
+  inputs:
+    pathways.master_patient_index:
+      rows:
+        - {flex_mrn: TEST0001, person_id: 1001, current_record: 1}
+        # Superseded record for the same MRN: ignored.
+        - {flex_mrn: TEST0001, person_id: 9999, current_record: 0}
+        # One MRN, two current people: ambiguous, left unlinked.
+        - {flex_mrn: TEST0003, person_id: 1003, current_record: 1}
+        - {flex_mrn: TEST0003, person_id: 1004, current_record: 1}
+        - {flex_mrn: TEST0005, person_id: 1005, current_record: 1}
+    pathways.src_rtt__incomplete_ptl:
+      columns:
+        organisation_code: varchar
+        pathway_type: varchar
+        pathway_id: varchar
+        visit_number: varchar
+        mrn: varchar
+        name: varchar
+        rtt_last_status: varchar
+        specialty: varchar
+        consultant: varchar
+        rtt_start_date: date
+        wait: int
+        tci_date: date
+        first_appt_date: date
+        extract_date: date
+      rows:
+        - {organisation_code: RXN, pathway_id: PW000001, mrn: TEST0001, rtt_start_date: 2026-01-05, extract_date: 2026-11-20}
+        # Unknown MRN: kept, unlinked.
+        - {organisation_code: RXN, pathway_id: PW000002, mrn: TEST0002, rtt_start_date: 2026-02-05, extract_date: 2026-11-20}
+        - {organisation_code: RXN, pathway_id: PW000003, mrn: TEST0003, rtt_start_date: 2026-03-05, extract_date: 2026-11-20}
+        # Padded MRN still links.
+        - {organisation_code: RXN, pathway_id: PW000005, mrn: " TEST0005 ", rtt_start_date: 2026-05-05, extract_date: 2026-11-20}
+  outputs:
+    query:
+      partial: true
+      rows:
+        - {pathway_id: PW000001, person_id: 1001, person_match_status: matched}
+        - {pathway_id: PW000002, person_id: null, person_match_status: no_match}
+        - {pathway_id: PW000003, person_id: null, person_match_status: ambiguous}
+        - {pathway_id: PW000005, person_id: 1005, person_match_status: matched}

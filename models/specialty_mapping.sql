@@ -1,5 +1,5 @@
 MODEL (
-  name fastrtt.specialty_mapping,
+  name pathways.specialty_mapping,
   kind SEED (
     path '$root/seeds/specialty_mapping.csv'
   ),
