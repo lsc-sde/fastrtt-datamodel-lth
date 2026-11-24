@@ -30,20 +30,35 @@ gateways = {}
 # Setup gateways
 
 # MSSQL
+# As in shovel: SQL authentication when MSSQL_USER and MSSQL_PASSWORD are set,
+# otherwise Windows authentication (Trusted_Connection; on a Mac this uses the
+# Kerberos ticket from `kinit`).
+
+_user = (os.getenv("MSSQL_USER") or "").strip() or None
+_password = (os.getenv("MSSQL_PASSWORD") or "").strip() or None
+
+_conn_kwargs: Dict[str, Any] = {
+    "driver": "pyodbc",
+    # e.g. "ODBC Driver 17 for SQL Server" on a host without 18
+    "driver_name": os.getenv("MSSQL_ODBC_DRIVER", "ODBC Driver 18 for SQL Server"),
+    "trust_server_certificate": True,
+}
+if _user and _password:
+    _conn_kwargs.update(user=_user, password=_password)
+else:
+    _conn_kwargs["odbc_properties"] = {"Trusted_Connection": "Yes"}
 
 gateway_mssql = GatewayConfig(
     connection=MSSQLConnectionConfig(
         host=os.environ["MSSQL_HOST"],
         database=os.environ["MSSQL_DATABASE"],
-        user=os.environ["MSSQL_USER"],
-        password=os.environ["MSSQL_PASSWORD"],
         concurrent_tasks=os.getenv("MSSQL_CONCURRENT_TASKS", default=4),
+        **_conn_kwargs,
     ),
     state_connection=MSSQLConnectionConfig(
         host=os.environ["MSSQL_STATE_HOST"],
         database=os.environ["MSSQL_STATE_DATABASE"],
-        user=os.environ["MSSQL_USER"],
-        password=os.environ["MSSQL_PASSWORD"],
+        **_conn_kwargs,
     ),
     state_schema=os.environ["STATE_SCHEMA"],
 )
@@ -91,22 +106,11 @@ class SQLMeshSettings(BaseModel):
 
 variables = {
     "db_ptl": os.getenv("DB_PTL"),
-    "db_toucan": os.getenv("DB_TOUCAN"),
-    "db_alma": os.getenv("DB_ALMA"),
-    "db_documentviewer": os.getenv("DB_DOCUMENTVIEWER"),
+    # Catalog and schema holding the OMOP stg__master_patient_index, e.g.
+    # LTHDATASCIENCE.dbt_omop.prod (via linked server) or dbt_omop.prod.
+    "db_mpi": os.getenv("DB_MPI"),
 }
-
-# Statements to execute before and after running SQLMesh
-before_all = [
-    "@before_all()",
-]
-
-after_all = [
-    "@after_all()",
-]
 
 config = Config(
     **dict(SQLMeshSettings(project="fastrtt-lth", variables=variables)),
-    before_all=before_all,
-    after_all=after_all,
 )
