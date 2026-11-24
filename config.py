@@ -39,7 +39,8 @@ _password = (os.getenv("MSSQL_PASSWORD") or "").strip() or None
 
 _conn_kwargs: Dict[str, Any] = {
     "driver": "pyodbc",
-    "driver_name": "ODBC Driver 18 for SQL Server",
+    # e.g. "ODBC Driver 17 for SQL Server" on a host without 18
+    "driver_name": os.getenv("MSSQL_ODBC_DRIVER", "ODBC Driver 18 for SQL Server"),
     "trust_server_certificate": True,
 }
 if _user and _password:
